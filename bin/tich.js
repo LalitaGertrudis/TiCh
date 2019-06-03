@@ -132,10 +132,10 @@ function tich() {
     function copyNotificationIcons(){
         console.log('#### Update notification icons for FCM...');
 
-        var filePath = './notification_icon.sh';
-    
+        var filePath = './.sh/notification_icon.sh';
+
         if (fs.existsSync(filePath)) {
-            exec('. notification_icon.sh ' + alloyCfg.global.theme, function() {
+            exec(`. ${filePath} ${alloyCfg.global.theme}`, function() {
                 console.log(chalk.cyan('Updating notification icons done'));
                 copyTesters();
             });
@@ -147,33 +147,40 @@ function tich() {
 
     function copyThemePlatformAssets() {
         console.log('### Copy Platform assets');
-        var platformDirectory = './app/themes/' + alloyCfg.global.theme + '/platform/'
-        
-        if (fs.existsSync(platformDirectory)) {
-            ncp(platformDirectory, './app/platform/', function (err) {
-                if (err) {
-                    console.error( chalk.red('Error found: ' + err) );
-                } else {
-                    console.log('Platform from ' + platformDirectory + ' copied');
-                }
 
-                //Continue copying icons
-                copyDefaultIcon();
-            });
-        } else {
-            //Continue copying icons
-            copyDefaultIcon();
-        }
-    }
+        exec('rm -r ./app/platform/*', function() {
+            console.log(chalk.cyan('App Platform cleaned'));
 
-    function removePlatformStoryBoard(){
-        console.log('### Remove previous LaunchScreen');
+            //default assets for all projects
+            var globalPlatformDirectory = './app/themes/global/platform';
 
-        var iosPlatformPath = './app/platform/iphone';
+            if( fs.existsSync(globalPlatformDirectory) ){
+                ncp(globalPlatformDirectory, './app/platform/', function (err) {
+                    if (err) {
+                        console.error(err);
+                    }
 
-        exec('rm -rf ' + iosPlatformPath, function () {
-            copyThemePlatformAssets();
-        });
+                    console.log(chalk.cyan('Global assets copied'));
+                    var platformDirectory = './app/themes/' + alloyCfg.global.theme + '/platform/'
+
+                    if (fs.existsSync(platformDirectory)) {
+                        ncp(platformDirectory, './app/platform/', function (err) {
+                            if (err) {
+                                console.error( chalk.red('Error found: ' + err) );
+                            } else {
+                                console.log('Platform from ' + platformDirectory + ' copied');
+                            }
+
+                            //Continue copying icons
+                            copyDefaultIcon();
+                        });
+                    } else {
+                        //Continue copying icons
+                        copyDefaultIcon();
+                    }
+                })
+            }
+        })
     }
 
     // select a new config by name
@@ -199,7 +206,7 @@ function tich() {
                     }
                 }
             });
-            
+
             // read in the app config
             var tiapp = tiappxml.load(infile);
 
@@ -295,7 +302,7 @@ function tich() {
 
 
                             var matches = regex.exec(replaceWith);
-                            
+
                             if (matches && matches[1]) {
                                 var propName = matches[1];
                                 replaceWith = replaceWith.replace(regex, tiapp[propName]);
@@ -319,7 +326,7 @@ function tich() {
                         if( isAlloy && processAlloy ){
                             alloyCfg.global.theme = name;
                             console.log('Changing ' + chalk.cyan('Alloy Theme') + ' to ' + chalk.yellow(alloyCfg.global.theme));
-                            
+
                             if( fs.existsSync('./app/themes/' + alloyCfg.global.theme + '/config.json') ){
                                 var configTheme = JSON.parse(fs.readFileSync('./app/themes/' + alloyCfg.global.theme + '/config.json', 'utf-8'));
                                 console.log('Updating Alloy config.json with theme configuration file');
@@ -341,7 +348,7 @@ function tich() {
 
                         exec('rm -r ./app/assets/*', function() {
                             console.log(chalk.cyan('Assets cleaned'));
-                            
+
                             //default assets for all projects
                             var globalAssetsDirectory = './app/themes/global/assets';
 
@@ -363,10 +370,10 @@ function tich() {
 
                                             console.log(chalk.cyan(alloyCfg.global.theme + ' assets copied'));
                                             console.log('Start Platform Assets management')
-                                            removePlatformStoryBoard();
+                                            copyThemePlatformAssets();
                                         });
                                     } else {
-                                        removePlatformStoryBoard();
+                                        copyThemePlatformAssets();
                                     }
 
                                 });
@@ -382,10 +389,10 @@ function tich() {
 
                                         console.log(chalk.cyan(alloyCfg.global.theme + ' assets copied'));
                                         console.log('Start Platform Assets management')
-                                        removePlatformStoryBoard();
+                                        copyThemePlatformAssets();
                                     });
                                 } else {
-                                    removePlatformStoryBoard();
+                                    copyThemePlatformAssets();
                                 }
                             }
                         });

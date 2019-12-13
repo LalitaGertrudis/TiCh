@@ -37,6 +37,7 @@
     "ncp": "^2.0.0",
     "tiapp.xml": "^0.2.2",
     "update-notifier": "^0.2.2",
-    "xpath": "^0.0.9"
+    "xpath": "^0.0.9",
+    "natives": "^1.1.6"
   }
 }
